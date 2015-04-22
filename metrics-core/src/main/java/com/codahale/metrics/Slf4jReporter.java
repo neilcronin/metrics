@@ -163,7 +163,7 @@ public class Slf4jReporter extends ScheduledReporter {
     private final Marker marker;
     private final String prefix;
 
-    private Slf4jReporter(MetricRegistry registry,
+    protected Slf4jReporter(MetricRegistry registry,
                           LoggerProxy loggerProxy,
                           Marker marker,
                           String prefix,
@@ -205,12 +205,13 @@ public class Slf4jReporter extends ScheduledReporter {
         }
     }
 
+    private String timerTemplate = "{ 'type': 'TIMER', 'name': '{}', 'count': '{}', 'min': '{}', 'max': '{}', 'mean': '{}', 'stddev': '{}', 'median': '{}', " +
+            "'p75': '{}', 'p95': '{}', 'p98': '{}', 'p99': '{}', 'p999': '{}', 'mean_rate': '{}', 'm1': '{}', 'm5': '{}', " +
+            "'m15': '{}', 'rate_unit': '{}', 'duration_unit': '{}' }";
     private void logTimer(String name, Timer timer) {
         final Snapshot snapshot = timer.getSnapshot();
         loggerProxy.log(marker,
-                "type=TIMER, name={}, count={}, min={}, max={}, mean={}, stddev={}, median={}, " +
-                        "p75={}, p95={}, p98={}, p99={}, p999={}, mean_rate={}, m1={}, m5={}, " +
-                        "m15={}, rate_unit={}, duration_unit={}",
+                timerTemplate,
                 prefix(name),
                 timer.getCount(),
                 convertDuration(snapshot.getMin()),
@@ -231,9 +232,10 @@ public class Slf4jReporter extends ScheduledReporter {
                 getDurationUnit());
     }
 
+    private String meterTemplate = "{ 'type': 'METER', 'name': '{}', 'count': '{}', 'mean_rate': '{}', 'm1': '{}', 'm5': '{}', 'm15': '{}', 'rate_unit': '{}' }";
     private void logMeter(String name, Meter meter) {
         loggerProxy.log(marker,
-                "type=METER, name={}, count={}, mean_rate={}, m1={}, m5={}, m15={}, rate_unit={}",
+                meterTemplate,
                 prefix(name),
                 meter.getCount(),
                 convertRate(meter.getMeanRate()),
@@ -243,11 +245,12 @@ public class Slf4jReporter extends ScheduledReporter {
                 getRateUnit());
     }
 
+    private String histogramTemplate = "{ 'type': 'HISTOGRAM', 'name': '{}', 'count': '{}', 'min': '{}', 'max': '{}', 'mean': '{}', 'stddev': '{}', " +
+            "'median': '{}', 'p75': '{}', 'p95': '{}', 'p98': '{}', 'p99': '{}', 'p999': '{}' }";
     private void logHistogram(String name, Histogram histogram) {
         final Snapshot snapshot = histogram.getSnapshot();
         loggerProxy.log(marker,
-                "type=HISTOGRAM, name={}, count={}, min={}, max={}, mean={}, stddev={}, " +
-                        "median={}, p75={}, p95={}, p98={}, p99={}, p999={}",
+                histogramTemplate,
                 prefix(name),
                 histogram.getCount(),
                 snapshot.getMin(),
